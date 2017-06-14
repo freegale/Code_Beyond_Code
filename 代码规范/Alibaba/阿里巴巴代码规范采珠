@@ -1,0 +1,84 @@
+#Alibaba Java 开发手册采珠
+## 编程规约
+### 命名风格
+* 代码命名中不能以下划线或者美元符号开始或结束。
+* 抽象类命名必须以`Abstract`或者`Base`开头，测试类必须以`Test`结尾。
+* POJO类中的`Boolean`值变量，绝不能以`is`打头,这会影响PRC的反向解析。
+* 接口类中的方法和属性不加任何修饰符
+* Service/DAO层的命名规约
+  * 获取单个对象的方法前缀`get`
+  * 获取多个对象的方法前缀用`list`
+  * 获取统计值的方法前缀用`count`
+  * 插入方法前缀用`save`
+  * 删除方法前缀用`remove`
+  * 修改方法前缀用`update`
+* 领域模型的命名
+  * 数据对象：xxxDO，与数据库表名对应
+  * 数据传输对象：XXXDTO，与业务领域相关名称对应
+  * 展示对象：xxxVO，与网页名对应
+  * POJO是DO/DTO/BO/VO的统称
+
+### 常量定义
+* 禁止在代码中出现未经定义的常量
+* long型初始值结尾必须用大写的L
+
+### OOP规约
+* 禁止用对象引用类的静态变量或静态方法，必须用类名引用。
+* 禁止使用java的可变参数。
+* 所有相同类型的包装类对象之间必须使用`equals`方法比较
+  > 注意：`Integer`赋值在`-128`到`127`范围内，对象在`IntegerCache.cache`产生以复用，可以直接用==比较，超出后会在堆上产生，而且不会复用已有值。所以用`equals`总是不会错。
+* 所有POJO类属性必须使用包装数据类型，且不设置默认值
+* RPC方法的返回值和参数必须使用包装数据类型，因为`null`对基本类型的自动拆箱解析会出错。
+* 构造方法里不能添加任何业务逻辑，如有初始化逻辑，需放在`init`方法中。
+* POJO类必须复写`toString`方法。对存在继承的情况，还需要增加`super.toString`方法。
+* 类内方法定义的顺序是：公有方法-保护方法-私有方法-getter/setter方法。
+* 循环体内的字符串连接或大型字符串连接，用`StringBuilder`的`append`方法。
+* 严格控制类成员和方法的作用域。
+
+## 集合处理
+* 【非常重要】`ArrayList`中的`subList`返回值是`ArrayList`的内部类，表示`ArrayList`的一个视图，不可强转为`ArrayList`。
+* `Arrays.ASList`把数组转换成集合时，具有上一项类似的问题。
+* 泛型通配符`<? extends T>`不能使用add方法而`<? super T>`不能使用get方法。`PECS`（Producer Extends Consumer Super）原则：频繁读取内容，用上界`Extends`；频繁插值的，用下界`Super`。
+* 在集合初始化的时候，指定集合的大小。例如：
+``` java
+HashMap(int initialCapacity)  // 通常为固定值16`
+```
+* 使用entrySet遍历Map，不要用keySet遍历
+* ArrayList是order/unsort;hashmap是unorder/unsort;TreeSet是order/sort
+* 用set快速对一个集合去重，避免使用List的contain方法遍历去重。例如：
+``` java
+   /**
+     * 将列表中重复的用户移除，重复指的是name相同
+     * 效率要高几十倍
+     * @param userList
+     * @return
+     */
+    public static ArrayList<People> removeDuplicteUsers(ArrayList<People> userList) {
+        Set<People> s = new TreeSet<People>(new Comparator<People>() {
+
+            @Override
+            public int compare(People o1, People o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        s.addAll(userList);
+        return new ArrayList<People>(s);
+    }
+```
+### 并发处理（待研究）
+
+## 异常日志（待研究）
+## MySQL数据库（待研究）
+## 工程结构（待研究）
+## 安全规约（待研究）
+## 专有名词（待研究）
+* **DO** 数据库表一一对应的POJO类
+* **GAV** Maven坐标，唯一标志jar包
+* **一方库** 本工程内部子项目模块依赖的库
+* **二方库** 公司内部供其他部门使用的库
+* **三方库** 公司外部的开源库
+
+
+## 关注点
+1. 为什么禁止使用可变参数？
+2. 要详细了解Java中的泛型的使用方法。
